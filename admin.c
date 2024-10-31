@@ -1,0 +1,308 @@
+#include "admin.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifdef _WIN32
+    #include <direct.h> // For Windows
+    #define MAKE_DIR(dir) _mkdir(dir) // Use _mkdir directly
+#else
+    #include <sys/stat.h> // For Unix-like systems
+    #define MAKE_DIR(dir) mkdir(dir, 0777) // Use mkdir with permissions
+#endif
+
+int chercherGrille(char *filename, int *type) {
+    char c;
+    int num;
+    do {
+        system("cls");
+        fflush(stdin);
+        printf("\n\n\t\t\t\t - cliquez sur '1' pour un niveau Facile \n\n");
+        printf("\t\t\t\t - cliquez sur '2' pour un niveau Intermediaire \n\n");
+        printf("\t\t\t\t - cliquez sur '3' pour un niveau Difficile \n\n");
+        printf("\t\t\t\t - cliquez sur '4' pour retourner au menu \n\n");
+        printf("\t\t\t --------------------------------------------------------------\n");
+        printf("\t\t\t\t Veuillez choisir le niveau du jeu :       ");
+        c = getchar();
+    } while(c < '1' || c > '4');
+    
+    if(c != '4'){
+        *type = c - '0';
+        num = numeroGrille(*type);
+    }
+    
+    // Only add `sudoku_grids/` once here.
+    switch(c) {
+        case '1': sprintf(filename, "sudoku_grids/Grille F %d", num); break;
+        case '2': sprintf(filename, "sudoku_grids/Grille I %d", num); break;
+        case '3': sprintf(filename, "sudoku_grids/Grille D %d", num); break;
+        case '4': return 0;
+    }
+    
+    return 1;
+}
+
+int numeroGrille(int niveau){
+    FILE * fichier = fopen("tablebord", "r");
+    int c, num = 0;
+    int i;
+    
+    if(fichier != NULL){
+        for(i = 1; i <= 3; i++){
+            fscanf(fichier, "%d %d\n", &c, &num);
+            if(c == niveau) break;
+        }
+        fclose(fichier);
+        return num + 1;
+    } else {
+        return 1;
+    }
+}
+
+void nombreGrilles(int niveau){
+    FILE * fichier = fopen("tablebord", "r");
+    FILE * copie;
+    int niv, num;
+    int i;
+
+    if(fichier != NULL){
+        copie = fopen("fichierTMP", "w");
+        for(i = 1; i <= 3; i++){
+            fscanf(fichier, "%d %d\n", &niv, &num);
+            if(niv == niveau){
+                fprintf(copie, "%d %d\n", niv, num + 1);
+            } else {
+                fprintf(copie, "%d %d\n", niv, num);
+            }
+        }
+        fclose(fichier);
+        fclose(copie);
+        remove("tablebord");
+        rename("fichierTMP", "tablebord");
+    } else {
+        fclose(fichier);
+        fichier = fopen("tablebord", "w");
+        for(i = 1; i <= 3; i++){
+            if(i == niveau){
+                fprintf(fichier, "%d %d\n", i, 1);
+            } else {
+                fprintf(fichier, "%d %d\n", i, 0);
+            }
+        }
+        fclose(fichier);
+    }
+}
+
+Grid * creerGrille(){
+    Grid * grille = (Grid *)malloc(sizeof(Grid));
+    int i, j;
+
+    for(i = 0; i < 9; i++){
+        for(j = 0; j < 9; j++){
+            grille->cell[i][j].valeur = 0;
+            grille->cell[i][j].estEditable = 1;
+        }
+    }
+    return grille;
+}
+
+Grid * genererGrilleRemplie(){
+    Grid * grille = (Grid *)malloc(sizeof(Grid));
+    int i, j;
+
+    for(i = 0; i < 9; i++){
+        for(j = 0; j < 9; j++){
+            grille->cell[i][j].valeur = (j + i * 3 + i / 3) % 9 + 1;
+            grille->cell[i][j].estEditable = 1;
+        }
+    }
+    return grille;
+}
+
+Grid * modifierGrille(Grid * grille) {
+    char lin, col, val;
+    int ligne, colonne, valeur;
+
+    while (1) {
+        system("cls");
+        afficherGrille(grille);
+
+        // Prompt for row selection
+        do {
+            printf("\t\t - Enter row number (1-9) or 'S' to stop: ");
+            lin = getchar();
+            clearBuffer(); // Clear the buffer to avoid leftover input issues
+            if (lin == 'S' || lin == 's') return grille; // Exit loop if 'S' is entered
+        } while (lin < '1' || lin > '9');
+
+        ligne = lin - '0';
+
+        // Prompt for column selection
+        do {
+            printf("\t\t - Enter column number (1-9): ");
+            col = getchar();
+            clearBuffer();
+        } while (col < '1' || col > '9');
+
+        colonne = col - '0';
+
+        // Prompt for cell value
+        do {
+            printf("\t\t - Enter value (0-9) for cell or '0' to clear: ");
+            val = getchar();
+            clearBuffer();
+        } while (val < '0' || val > '9');
+
+        valeur = val - '0';
+
+        // Set value and check for conflicts
+        int previousValue = grille->cell[ligne - 1][colonne - 1].valeur;
+        grille->cell[ligne - 1][colonne - 1].valeur = valeur;
+        
+        if (valeur != 0 && (!verifierLigne(grille, ligne - 1) || !verifierColonne(grille, colonne - 1) || !verifierRegion(grille, ligne - 1, colonne - 1))) {
+            printf("\n\t\t - ERROR: Value %d conflicts with existing values. Re-enter.\n", valeur);
+            grille->cell[ligne - 1][colonne - 1].valeur = previousValue;
+            getchar();
+        } else {
+            // Mark cell as non-editable if a non-zero value is entered
+            grille->cell[ligne - 1][colonne - 1].estEditable = (valeur == 0) ? 1 : 0;
+        }
+    }
+
+    return grille;
+}
+
+
+
+Grid * importerGrille(){
+    Grid * grille = (Grid *)malloc(sizeof(Grid));
+    char chemin[128];
+    FILE * fich;
+    int i, j;
+
+    printf("\n\t\t\t  - entrer le chemin vers le fichier contenant la grille > ");
+    clearBuffer();
+    fgets(chemin, sizeof(chemin), stdin);
+
+    if(!validerFichier(chemin)){
+        printf("\n\t\t\t  - ERREUR : Le fichier est invalide , il ne correspond pas a une grille Sudoku !\n");
+        free(grille);
+        return NULL;
+    }
+
+    fich = fopen(chemin, "r");
+    if(fich != NULL){
+        for(i = 0; i < 9; i++){
+            for(j = 0; j < 9; j++){
+                fscanf(fich, "%d ", &grille->cell[i][j].valeur);
+                if(grille->cell[i][j].valeur != 0) grille->cell[i][j].estEditable = 0;
+                else grille->cell[i][j].estEditable = 1;
+            }
+            fscanf(fich, "\n");
+        }
+    } else {
+        printf("\n\t\t\t  - ERREUR : Le fichier est introuvable !\n");
+        free(grille);
+        return NULL;
+    }
+    fclose(fich);
+    return grille;
+}
+
+int validerFichier(char * filename){
+    FILE * fich = fopen(filename, "r");
+    char c;
+    int cmpt = 0;
+
+    if(fich == NULL) {
+        printf("\n\t\t\t Remarque : un probleme est survenu lors de l'ouverture du fichier \n");
+        return 0;
+    }
+
+    while ((c = fgetc(fich)) != EOF) {
+        cmpt += 1;
+        if(c == ' ' || (c <= '9' && c >= '0') || c == '\n');
+        else return 0;
+    }
+    fclose(fich);
+    if(cmpt != 171) return 0;
+
+    return 1;
+}
+
+void choixMenuAdmin(char choix){
+    char filename[62], c;
+    Grid * grille = NULL;
+    int type;
+
+    switch (choix){
+        case '1':
+            printf("\n\n\n\t\t\t --------------------- CREER UNE GRILLE SUDOKU ---------------------\n\n");
+            if(chercherGrille(filename, &type)){
+                do{
+                    system("cls");
+                    printf("\n\n\n\t\t\t\t - cliquez sur .1. pour creer une nouvelle grille pour votre jeu\n\n");
+                    printf("\t\t\t\t - cliquez sur .2. pour importer un fichier qui contient votre grille \n\n");
+                    printf("\t\t\t\t ----------------------------------------------------------------- \n\n\t\t\t\t >");
+                    clearBuffer();
+                    c = getchar();
+                } while(c < '1' || c > '2');
+
+                if(c == '1'){
+                    grille = creerGrille();
+                    enregistrerGrille(filename, modifierGrille(grille));
+                    nombreGrilles(type);
+                } else if(c == '2'){
+                    grille = importerGrille();
+                    if(grille != NULL){
+                        if(verifierGrille(grille)){
+                            enregistrerGrille(filename, grille);
+                            nombreGrilles(type);
+                        } else {
+                            printf("\n\n\t\t\t - ERREUR : Cette grille est incorrecte !\n");
+                            free(grille);
+                            grille = NULL;
+                        }
+                    }
+                }
+
+                clearBuffer();
+                if(grille != NULL) printf("\n\t\t\t - REMARQUE : La grille (%s) a ete cree avec succes !\n", filename);
+                else printf("\n\t\t\t - REMARQUE : Une erreur est survenu lors de la creation de la grille Sudoku !\n");
+                printf("\n\t\t\t tapez (entrer) pour terminer > ");
+                getchar();
+            }
+            break;
+
+        case '2':
+            grille = genererGrilleRemplie();
+            afficherGrille(grille);
+            clearBuffer();
+            printf("\t\t\t sauvegarder cette grille de test sur votre Bureau ?: (y ou n) ? ");
+            c = getchar();
+            if(c == 'y') enregistrerGrille("C:\\Users\\Admin\\Desktop\\GrilleTEST", grille);
+            break;
+
+        case '3':
+            printf("Quitter \n");
+            break;
+    }
+    system("cls");
+}
+
+void menuAdmin() {
+    _mkdir("sudoku_grids"); // Ensure the folder exists
+    char c;
+    do {
+        clearBuffer();
+        printf("\n\n\n\t\t\t ---------------------------- MENU ADMIN SUDOKU ----------------------------\n\n");
+        printf("\t\t\t\t - cliquez sur .1. pour creer une grille \n\n");
+        printf("\t\t\t\t - cliquez sur .2. pour generer une grille de test (pre-remplie) \n\n");
+        printf("\t\t\t\t - cliquez sur .3. pour quitter \n\n");
+        printf("\t\t\t ----------------------------------------------------------------------------\n");
+        printf("\t\t\t\t Faites votre choix : ");
+        scanf("%c", &c);
+        system("cls");
+        choixMenuAdmin(c);
+    } while(c != '3');
+}
+
