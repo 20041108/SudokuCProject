@@ -1,6 +1,8 @@
 #ifndef SUDOKO_H_INCLUDED
 #define SUDOKO_H_INCLUDED
 
+#include "partie.h" // Include Partie structure definitions
+
 //structure d'une cellule (une case) de la grille.
 	struct cellule
 	{
@@ -27,8 +29,11 @@
     int choisirGrille(char * filename, char * niveau);
     void choisirCellule(Grid * grille, int * lin, int * col);
     void remplirCellule(Grid * grille);
-    Grid * remplirGrille(Grid * grille, int * progression, int * temps);
+
+    Grid * remplirGrille(Grid * grille, int * progression, int * temps, Partie * partie);
+    
     void reglesSudoku();
+
     int  proposerAide(Grid * grille , int ligne, int colonne);
     void choix(char choix, char * pseudo);
     void menuSudoku();
@@ -40,6 +45,8 @@
 
     void viderTampon();
     void clearBuffer();
+
+    int fileExists(const char *filename);
 
 
 #endif // SUDOKO_H_INCLUDED

@@ -26,9 +26,11 @@ int verifierPseudo(char * pseudo){
     return 1;
 }
 
-int ajouterStatistique(Partie * partie, char * filename){
-    FILE * fich = fopen(filename, "a");
-    if(fich == NULL) return 0;
+int ajouterStatistique(Partie *partie, char *filename) {
+    FILE *fich = fopen(filename, "a");
+    if (fich == NULL) return 0;
+    
+    // Enregistrer les détails de la partie dans le fichier statistiques
     fprintf(fich, "%d %s %s %d %d\n", partie->id, partie->joeur, partie->niveau, partie->temps, partie->progression);
     fclose(fich);
     return 1;
@@ -61,29 +63,41 @@ int modifierStatistique(Partie * partie){
     return 1;
 }
 
-void afficherStatistiques(){
+void afficherStatistiques(char *pseudo) {
     Partie partie;
-    FILE * fich = fopen("statistiques", "r");
-    int secondes = 0, minutes = 0, heures = 0;
+    FILE *fich = fopen("statistiques", "r");
+    int heures, minutes, secondes;
     char temps[20], progression[10];
-    afficherSudoku();
-    if(fich == NULL){
-        printf("\n\t\t\t Alerte : aucune statistique n'a ete enregistree jusqu'au present !\n");
+    int found = 0;
+
+    if (fich == NULL) {
+        printf("\n\t\t\t Alerte : aucune statistique n'a été enregistrée jusqu'à présent !\n");
         return;
     }
+
+    printf("\n\n\t\t--- Statistiques pour le joueur : %s ---\n", pseudo);
     printf("\n\t|----------------------|----------------------|----------------------|----------------------|\n");
-    printf("\t| %-20s | %-20s | %-20s | %-20s |\n", "Joueur", "Niveau", "Temps", "Progression");
+    printf("\t| %-20s | %-20s | %-20s | %-20s |\n", "ID Partie", "Niveau", "Temps", "Progression");
     printf("\t|----------------------|----------------------|----------------------|----------------------|\n");
-    while(!feof(fich)){
-       fscanf(fich, "%d %s %s %d %d\n", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression);
-       formatTemps((int)partie.temps, &heures, &minutes, &secondes);
-       sprintf(temps, "%d h %d min %d s", heures, minutes, secondes);
-       sprintf(progression, "%d/81", partie.progression);
-       printf("\t| %-20s | %-20s | %-20s | %-20s |\n", partie.joeur, partie.niveau, temps, progression);
+
+    // Parcours du fichier des statistiques
+    while (fscanf(fich, "%d %s %s %d %d\n", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression) == 5) {
+        if (strcmp(partie.joeur, pseudo) == 0) {
+            formatTemps(partie.temps, &heures, &minutes, &secondes);
+            snprintf(temps, sizeof(temps), "%d h %d min %d s", heures, minutes, secondes);
+            snprintf(progression, sizeof(progression), "%d/81", partie.progression);
+            printf("\t| %-20d | %-20s | %-20s | %-20s |\n", partie.id, partie.niveau, temps, progression);
+            found = 1;
+        }
     }
     printf("\n\t|----------------------|----------------------|----------------------|----------------------|\n");
+
+    if (!found) {
+        printf("\n\t\t--- Aucune partie trouvée pour le joueur : %s ---\n", pseudo);
+    }
     fclose(fich);
 }
+
 
 int chercherStatistique(char * pseudo){
     Partie partie;
@@ -156,39 +170,73 @@ int totalParties(char * pseudo){
     return i;
 }
 
-int choisirPartie(char * filename, char * pseudo){
-    FILE * fich = NULL;
-    Partie partie;
-    int i = 0, MAX = totalParties(pseudo);
-    if(MAX == 0) return 0;
-    int TAB[MAX];
-    char id[10];
-    do{
-        system("cls");
-        fich = fopen("statistiques", "r");
-        printf("\n\t|----------------------|----------------------|----------------------|\n");
-        printf("\t| %-20s | %-20s | %-20s |\n", "numero", "Joueur", "Niveau");
-        printf("\t|----------------------|----------------------|----------------------|\n");
-        while(!feof(fich)){
-           fscanf(fich, "%d %s %s %d %d\n", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression);
-           if(strcmp(partie.joeur, pseudo) == 0){
-               printf("\t| %-20d | %-20s | %-20s |\n", partie.id, partie.joeur, partie.niveau);
-               TAB[i++] = partie.id;
-           }
-        }
-        fclose(fich);
-        printf("\n\t|----------------------|----------------------|----------------------|\n");
-        printf("\n\t Entrez .0. pour retourner au menu principal \n");
-        printf("\n\t Entrez le numero correspondant au partie que vous voulez continuer > ");
-        fflush(stdin);
-        scanf("%s", id);
-    } while(!verifierIdPartie(TAB, MAX, id));
-    if(strcmp(id, "0") == 0){
-        return 2;
+#include <dirent.h> // Pour lire les fichiers d'un répertoire
+
+int choisirPartie(char *filename, char *pseudo) {
+    DIR *dir;
+    struct dirent *entry;
+    int count = 0;
+    char pattern[50];
+    
+    snprintf(pattern, sizeof(pattern), "%s_", pseudo); // Prépare le modèle de recherche, ex: "bourhan_"
+    
+    // Ouvre le répertoire courant
+    if ((dir = opendir(".")) == NULL) {
+        perror("Erreur : Impossible d'ouvrir le répertoire");
+        return 0;
     }
-    sprintf(filename, "%s %s", pseudo, id);
-    return 1;
+
+    printf("\n\t|----------------------|----------------------|\n");
+    printf("\t| %-20s | %-20s |\n", "Numero", "Nom de Fichier de Partie");
+    printf("\t|----------------------|----------------------|\n");
+
+    // Parcourt les fichiers du répertoire
+    while ((entry = readdir(dir)) != NULL) {
+        if (strstr(entry->d_name, pattern) == entry->d_name) { // Vérifie si le fichier commence par "pseudo_"
+            printf("\t| %-20d | %-20s |\n", count + 1, entry->d_name);
+            count++;
+        }
+    }
+    closedir(dir);
+
+    if (count == 0) {
+        printf("\n\tAucune partie trouvée pour le pseudo '%s'.\n", pseudo);
+        return 0; // Retourne si aucune partie n'est trouvée
+    }
+
+    printf("\n\t|----------------------|----------------------|\n");
+    printf("\n\t Entrez le numéro de la partie que vous voulez charger (ou 0 pour annuler) > ");
+    
+    int choice;
+    scanf("%d", &choice);
+
+    if (choice == 0) {
+        return 2; // Annule le chargement de la partie
+    } else if (choice > 0 && choice <= count) {
+        // Recharge le répertoire pour sélectionner le bon fichier
+        if ((dir = opendir(".")) == NULL) {
+            perror("Erreur : Impossible de rouvrir le répertoire");
+            return 0;
+        }
+
+        count = 0;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strstr(entry->d_name, pattern) == entry->d_name) {
+                count++;
+                if (count == choice) {
+                    snprintf(filename, 260, "%s", entry->d_name); // Copie le nom du fichier choisi dans un buffer de taille suffisante
+                    closedir(dir);
+                    return 1;
+                }
+            }
+        }
+        closedir(dir);
+    }
+
+    printf("\n\tChoix invalide.\n");
+    return 0;
 }
+
 
 int verifierIdPartie(int * tab, int taille, char * saisie){
     size_t i;

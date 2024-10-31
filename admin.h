@@ -12,6 +12,7 @@ Grid * genererGrilleRemplie();
 Grid * modifierGrille(Grid * grille);
 void choixMenuAdmin(char choix);
 int validerFichier(char * filename);
+void goodbyeMessage();
 
 void menuAdmin();
 void clearBuffer();
