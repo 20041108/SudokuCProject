@@ -1,9 +1,9 @@
 #ifndef SUDOKO_H_INCLUDED
 #define SUDOKO_H_INCLUDED
 
-#include "partie.h" // Include Partie structure definitions
+#include "partie.h" 
 
-//structure d'une cellule (une case) de la grille.
+
 	struct cellule
 	{
 	   int valeur;
@@ -11,7 +11,6 @@
 	};
 	typedef struct cellule Cell;
 
-//structure d'une grille sudoku 9x9 (81 cases/cellules).
 	struct grille
 	{
 	    Cell cell[9][9];
@@ -49,4 +48,4 @@
     int fileExists(const char *filename);
 
 
-#endif // SUDOKO_H_INCLUDED
+#endif 

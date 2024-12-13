@@ -6,14 +6,21 @@
 #include <time.h>
 
 #ifdef _WIN32
-    #include <direct.h> // For Windows
+    #include <direct.h> 
     #define MAKE_DIR(dir) _mkdir(dir)
 #else
-    #include <sys/stat.h> // For Unix-like systems
-    #define MAKE_DIR(dir) mkdir(dir, 0777) // 0777 gives full permissions
+    #include <sys/stat.h> 
+    #define MAKE_DIR(dir) mkdir(dir, 0777) 
 #endif
 
 #include "partie.h"
+
+#define RED "\033[1;31m"
+#define GREEN "\033[1;32m"
+#define YELLOW "\033[1;33m"
+#define BLUE "\033[1;34m"
+#define ORANGE "\033[0;33m"  
+#define RESET "\033[0m"
 
 
 
@@ -132,23 +139,22 @@ Grid * chargerGrille(char * filename) {
         return NULL;
     }
     
-    printf("Debug: File %s opened successfully.\n", filename); // Debug message
+    printf("Debug: File %s opened successfully.\n", filename); 
     
     Grid * grille = (Grid*) malloc(sizeof(Grid));
     if (grille == NULL) {
         printf("Error: Memory allocation failed for grid structure.\n");
-        fclose(fich); // Close the file if memory allocation fails
+        fclose(fich); 
         return NULL;
     }
     
     printf("Debug: Memory allocated for grid structure. Loading grid data...\n");
 
-    // Load grid values and editable flags from the file
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             if (fscanf(fich, "%d %d", &grille->cell[i][j].valeur, &grille->cell[i][j].estEditable) != 2) {
                 printf("Error: Incorrect file format in %s. Expected 2 values per cell.\n", filename);
-                free(grille); // Free memory in case of an error
+                free(grille); 
                 fclose(fich);
                 return NULL;
             }
@@ -156,7 +162,7 @@ Grid * chargerGrille(char * filename) {
     }
     
     fclose(fich);
-    printf("Debug: Grid data loaded successfully from %s\n", filename); // Debug message
+    printf("Debug: Grid data loaded successfully from %s\n", filename); 
     return grille;
 }
 
@@ -184,8 +190,8 @@ int totalGrille(int niveau) {
 
     int found = 0;
     for(i = 1; i <= 3; i++) {
-        if (fscanf(fichier, "%d %d\n", &c, &num) == 2) { // Ensure fscanf reads both values
-            printf("Debug: Read level %d with %d grids.\n", c, num);  // Debug print
+        if (fscanf(fichier, "%d %d\n", &c, &num) == 2) { 
+            printf("Debug: Read level %d with %d grids.\n", c, num);  
             if(c == niveau) {
                 found = 1;
                 break;
@@ -214,7 +220,7 @@ void initialisation(char * pseudo) {
         system("cls");
         afficherSudoku();
         printf("\n\n");
-        printf("\n\t\t\t Merci de rentrer votre pseudo > ");
+        printf("\n\t\t\t\t\t Veuiller entrer votre pseudo > ");
         fflush(stdin);
         fgets(pseudo, sizeof(pseudo), stdin);
         if(!verifierPseudo(pseudo)) {
@@ -261,7 +267,7 @@ int choisirGrille(char *filename, char *niveau) {
         
         clearBuffer();
         c = getchar();
-        printf("Debug: Chosen level character: %c\n", c); // Debug print
+        printf("Debug: Chosen level character: %c\n", c); 
     } while(c < '1' || c > '4');
 
     if (c == '4') {
@@ -269,7 +275,6 @@ int choisirGrille(char *filename, char *niveau) {
         return 0;
     }
 
-    // Determine total grids available for the selected difficulty
     srand(time(NULL));
     int total = totalGrille(c - '0');
     printf("Debug: Total grids available for level %d: %d\n", c - '0', total);
@@ -279,7 +284,6 @@ int choisirGrille(char *filename, char *niveau) {
         return 0;
     }
 
-    // Attempt to find a grid file for the selected level
     int attempts = total;
     do {
         num = rand() % total + 1;
@@ -298,11 +302,11 @@ int choisirGrille(char *filename, char *niveau) {
                 break;
         }
 
-        printf("Debug: Trying to load grid file: %s\n", filename); // Debug print
+        printf("Debug: Trying to load grid file: %s\n", filename); 
 
         // Check if the file exists
         if (fileExists(filename)) {
-            printf("Debug: File found: %s\n", filename); // Debug print
+            printf("Debug: File found: %s\n", filename); 
             return 1;
         }
 
@@ -311,7 +315,7 @@ int choisirGrille(char *filename, char *niveau) {
 
     } while (attempts > 0);
 
-    // If no valid grid files were found
+    
     printf("Error: No valid grid files found for the selected level.\n");
     return 0;
 }
@@ -366,12 +370,12 @@ void remplirCellule(Grid * grille) {
     v = grille->cell[ligne - 1][colonne - 1].valeur;
 
     do {
-        conflict = 0; // Reset conflict at the beginning of each loop
+        conflict = 0; 
         printf("\t\t - entrer la valeur de la case (saisir 0 pour supprimer) :");
         scanf(" %c", &val);
         fflush(stdin);
 
-        // Check if input is between '0' and '9'
+        
         if (val > '9' || val < '0') {
             system("cls");
             afficherGrille(grille);
@@ -379,14 +383,14 @@ void remplirCellule(Grid * grille) {
             printf("\t\t - entrer le numero de la ligne : %d \n", ligne);
             printf("\t\t - entrer le numero de la colonne : %d \n", colonne);
         } else {
-            // Convert character to integer
+           
             valeur = val - '0';
             grille->cell[ligne - 1][colonne - 1].valeur = valeur;
 
-            // Check for conflicts
+            
             if (!verifierLigne(grille, ligne - 1)) {
                 conflict = 1;
-                grille->cell[ligne - 1][colonne - 1].valeur = v; // Reset to previous value
+                grille->cell[ligne - 1][colonne - 1].valeur = v; 
                 system("cls");
                 afficherGrille(grille);
                 printf("\n\t\t - ERREUR : cet indice existe deja dans la ligne %d !\n\n", ligne);
@@ -395,7 +399,7 @@ void remplirCellule(Grid * grille) {
                 printf("\t\t - valeur invalide : %c \n", val);
             } else if (!verifierColonne(grille, colonne - 1)) {
                 conflict = 1;
-                grille->cell[ligne - 1][colonne - 1].valeur = v; // Reset to previous value
+                grille->cell[ligne - 1][colonne - 1].valeur = v; 
                 system("cls");
                 afficherGrille(grille);
                 printf("\n\t\t - ERREUR : cet indice existe deja dans la colonne %d !\n\n", colonne);
@@ -404,7 +408,7 @@ void remplirCellule(Grid * grille) {
                 printf("\t\t - valeur invalide : %c \n", val);
             } else if (!verifierRegion(grille, ligne - 1, colonne - 1)) {
                 conflict = 1;
-                grille->cell[ligne - 1][colonne - 1].valeur = v; // Reset to previous value
+                grille->cell[ligne - 1][colonne - 1].valeur = v; 
                 system("cls");
                 afficherGrille(grille);
                 printf("\n\t\t - ERREUR : cet indice existe deja dans cette region !\n\n");
@@ -413,7 +417,7 @@ void remplirCellule(Grid * grille) {
                 printf("\t\t - valeur invalide : %c \n", val);
             }
         }
-    } while (val < '0' || val > '9' || conflict); // Repeat if input is invalid or there's a conflict
+    } while (val < '0' || val > '9' || conflict); 
 
     system("cls");
     afficherGrille(grille);
@@ -436,16 +440,16 @@ Grid * remplirGrille(Grid * grille, int * progression, int * duree, Partie *part
     int progress;
     char filename[50];
 
-    // Create a dynamic filename using partie->joeur and partie->niveau
+    
     int len = snprintf(filename, sizeof(filename), "%.20s_%.20s_save.txt", partie->joeur, partie->niveau);
-    if (len >= (int)sizeof(filename)) {  // Cast sizeof(filename) to int to match len's type
+    if (len >= (int)sizeof(filename)) {  
         fprintf(stderr, "Warning: Truncated filename\n");
     }
 
     time(&debut);
 
     do {
-        // Clear the screen and display the Sudoku grid with the progression information
+       
         system("cls");
         afficherGrille(grille);
         progress = progressionJeu(grille);
@@ -453,46 +457,42 @@ Grid * remplirGrille(Grid * grille, int * progression, int * duree, Partie *part
         calculerTemps(&debut, &temps);
         printf("|   \t temps :: %.0f sec. (en calcul...)\n\n", temps);
 
-        // Display the game options (Continue, Help, Save and Exit)
-        printf("\n\t --------- Options: (Entrée) Continuer - (A) Aide - (S) Sauvegarder et Sortir ---------\n\t >");
+       
+        printf("\n\t --------- Options: (Entree) Continuer - (A) Aide - (S) Sauvegarder et Sortir ---------\n\t >");
 
-        // Clear the input buffer and get user choice
+        
         clearBuffer();
         c = getchar();
 
-        // Handle the selected option based on input
+        
         if (c == 'S' || c == 's') {
-            // Save and exit option
+            
             printf("Enregistrement de la partie en cours...\n");
-            enregistrerGrille(filename, grille); // Save to the dynamically generated file name
+            enregistrerGrille(filename, grille); 
             *progression = progressionJeu(grille);
             *duree = (int)temps;
-            return NULL; // Indicate that the game was saved and exited early
+            return NULL; 
         } else if (c == 'A' || c == 'a') {
-            // Help option
             int ligne, colonne;
             choisirCellule(grille, &ligne, &colonne);
             grille->cell[ligne - 1][colonne - 1].valeur = proposerAide(grille, ligne, colonne);
-            continue; // Skip to the next iteration to display updated grid and options
+            continue; 
         } else if (c == '\n') {
-            // Continue option to fill a cell
             remplirCellule(grille);
         }
 
-        // Check if the game is completed after each action
         if (progressionJeu(grille) == 81) {
             if (verifierGrille(grille)) {
-                printf("\n\n\t\t\t ------------- :) Felicitation vous avez completé cette partie! (: -------------\n\n");
-                getchar(); // Wait for input
-                return grille; // Return the completed grid
+                printf("\n\n\t\t\t ------------- :) Felicitation vous avez complete cette partie! (: -------------\n\n");
+                getchar(); 
+                return grille; 
             } else {
                 printf("\n\n\t\t\t ---------------- :( Grille incorrecte  ): ----------------\n\n");
             }
         }
 
-    } while (c != 'S' && c != 's'); // Continue looping until the user decides to save and exit
+    } while (c != 'S' && c != 's'); 
 
-    // Update progression and duration before exiting the game
     *progression = progressionJeu(grille);
     *duree = (int)temps;
     return grille;
@@ -505,16 +505,16 @@ Grid * remplirGrille(Grid * grille, int * progression, int * duree, Partie *part
 
 void reglesSudoku() {
     afficherSudoku();
-    printf("\n\n\t\t ------------------------------------ Regles du Sudoku ------------------------------------- \n\t\t|");
-    printf(" 1. Le Sudoku se joue sur une grille 9x9.                                                   |\n\t\t|");
-    printf(" 2. Chaque ligne doit contenir les chiffres de 1 a 9, sans repetition.                      |\n\t\t|");
-    printf(" 3. Chaque colonne doit egalement contenir les chiffres de 1 a 9, sans repetition.          |\n\t\t|");
-    printf(" 4. Chaque sous-grille 3x3 (appelee region) doit contenir les chiffres [1-9]                |\n\t\t|");
-    printf(" 5. Une grille de Sudoku initiale est partiellement remplie avec des chiffres,              |\n\t\t|");
-    printf("    l'objectif est de completer la grille.                                                  |\n\t\t|");
-    printf(" 6. Aucun chiffre ne doit se repeter dans une meme ligne, colonne ou region.                |\n\t\t|");
-    printf(" 7. La solution d'une grille de Sudoku est unique.                                          |\n\t\t");
-    printf(" ------------------------------------------------------------------------------------------- \n");
+    printf(RED "\n\n\t\t ------------------------------------ Regles du Sudoku ------------------------------------- \n\t\t|");
+    printf(GREEN" 1. Le Sudoku se joue sur une grille 9x9.                                                   |\n\t\t|");
+    printf(GREEN" 2. Chaque ligne doit contenir les chiffres de 1 a 9, sans repetition.                      |\n\t\t|");
+    printf(GREEN" 3. Chaque colonne doit egalement contenir les chiffres de 1 a 9, sans repetition.          |\n\t\t|" );
+    printf(GREEN" 4. Chaque sous-grille 3x3 (appelee region) doit contenir les chiffres [1-9]                |\n\t\t|");
+    printf(GREEN" 5. Une grille de Sudoku initiale est partiellement remplie avec des chiffres,              |\n\t\t|");
+    printf(GREEN"    l'objectif est de completer la grille.                                                  |\n\t\t|");
+    printf(GREEN" 6. Aucun chiffre ne doit se repeter dans une meme ligne, colonne ou region.                |\n\t\t|");
+    printf(GREEN" 7. La solution d'une grille de Sudoku est unique.                                          |\n\t\t"RESET);
+    printf(RED" ------------------------------------------------------------------------------------------- \n" );
 }
 
 int proposerAide(Grid * grille, int ligne, int colonne) {
@@ -586,7 +586,7 @@ void choix(char choix, char *pseudo) {
 
     switch (choix) {
         case '1': {
-            // Utilisation de 15 caractères max pour éviter la troncature du nom de fichier
+            // Utilisation de 15 caractères max pour eviter la troncature du nom de fichier
             int len = snprintf(filename, sizeof(filename), "%.15s_%.15s_save.txt", partie.joeur, partie.niveau);
 
             if (len >= (int)sizeof(filename)) {
@@ -611,7 +611,6 @@ void choix(char choix, char *pseudo) {
             grille = remplirGrille(grille, &partie.progression, &partie.temps, &partie);
 
             if (grille != NULL) {
-                // Si la partie est terminée, l'enregistrer définitivement
                 partie.id = totalParties(pseudo) + 1;
                 len = snprintf(filename, sizeof(filename), "%.15s_%.15s_%d.txt", partie.joeur, partie.niveau, partie.id);
 
@@ -619,12 +618,12 @@ void choix(char choix, char *pseudo) {
                     fprintf(stderr, "Warning: Filename truncated.\n");
                 }
 
-                enregistrerGrille(filename, grille); // Sauvegarder la partie terminée
+                enregistrerGrille(filename, grille); 
                 ajouterStatistique(&partie, "statistiques");
 
-                // Supprimer la sauvegarde temporaire
+                
                 snprintf(filename, sizeof(filename), "%.15s_%.15s_save.txt", partie.joeur, partie.niveau);
-                remove(filename); // Suppression du fichier de sauvegarde
+                remove(filename); 
             } else {
                 printf("Game saved for next time.\n");
             }
@@ -645,9 +644,9 @@ void choix(char choix, char *pseudo) {
                 enregistrerGrille(filename, grille);
                 modifierStatistique(&partie);
             } else {
-                printf("\n\n\t\t\t --------- Vous n'avez commencé aucune partie! ---------\n\t");
+                printf("\n\n\t\t\t --------- Vous n'avez commence aucune partie! ---------\n\t");
                 clearBuffer();
-                printf("\n\t\t\t Tapez (Entrée) pour retourner au menu principal > ");
+                printf("\n\t\t\t Tapez (Entree) pour retourner au menu principal > ");
                 getchar();
             }
             break;
@@ -656,7 +655,7 @@ void choix(char choix, char *pseudo) {
         case '3':
             reglesSudoku();
             clearBuffer();
-            printf("\n\t\t\t (Entrée) pour retourner au menu principal >");
+            printf("\n\t\t\t (Entree) pour retourner au menu principal >");
             getchar();
             break;
 
@@ -676,12 +675,12 @@ void choix(char choix, char *pseudo) {
             if (c == '1') {
                 chercherStatistique(pseudo);
                 clearBuffer();
-                printf("\n\t\t\t (Entrée) pour retourner au menu principal >");
+                printf("\n\t\t\t (Entree) pour retourner au menu principal >");
                 getchar();
             } else if (c == '2') {
                 afficherStatistiques();
                 clearBuffer();
-                printf("\n\t\t\t (Entrée) pour retourner au menu principal >");
+                printf("\n\t\t\t (Entree) pour retourner au menu principal >");
                 getchar();
             }
             break;
@@ -700,13 +699,13 @@ void menuSudoku() {
     do {
         fflush(stdin);
         printf("\n\n\t\t\t --------------------------------------------------------------------------------------------\n");
-        printf("\t\t\t Joueur : %s", pseudo);
+        printf("\t\t\t Le nom de votre Joueur : %s", pseudo);
         printf("\n\t\t\t ------------------------------------ MENU DU JEU SUDOKU ------------------------------------\n\n");
-        printf("\t\t\t\t - cliquez sur .1. pour commencer une nouvelle partie. \n\n");
-        printf("\t\t\t\t - cliquez sur .2. pour continuer votre derniere partie. \n\n");
-        printf("\t\t\t\t - cliquez sur .3. pour se renseigner sur les regles du SUDOKU.\n\n");
-        printf("\t\t\t\t - cliquez sur .4. pour consulter les statistiques.\n\n");
-        printf("\t\t\t\t - cliquez sur .5. pour quitter. \n");
+        printf("\t\t\t\t - Appuyez sur .1. Commencer une nouvelle partie. \n\n");
+        printf("\t\t\t\t - Appuyez sur .2. Continuer votre derniere partie. \n\n");
+        printf("\t\t\t\t - Appuyez sur .3. Voirs les regles du SUDOKU.\n\n");
+        printf("\t\t\t\t - Appuyez sur .4. Consulter votres statistiques.\n\n");
+        printf("\t\t\t\t - Appuyez sur .5. Quitter. \n");
         printf("\n\t\t\t ---------------------------------------------------------------------------------------------\n");
         printf("\t\t\t Faites votre choix > ");
         scanf("%c", &c);

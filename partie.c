@@ -30,7 +30,6 @@ int ajouterStatistique(Partie *partie, char *filename) {
     FILE *fich = fopen(filename, "a");
     if (fich == NULL) return 0;
     
-    // Enregistrer les détails de la partie dans le fichier statistiques
     fprintf(fich, "%d %s %s %d %d\n", partie->id, partie->joeur, partie->niveau, partie->temps, partie->progression);
     fclose(fich);
     return 1;
@@ -71,7 +70,7 @@ void afficherStatistiques(char *pseudo) {
     int found = 0;
 
     if (fich == NULL) {
-        printf("\n\t\t\t Alerte : aucune statistique n'a été enregistrée jusqu'à présent !\n");
+        printf("\n\t\t\t Alerte : aucune statistique n'a ete enregistree jusqu'à present !\n");
         return;
     }
 
@@ -93,7 +92,7 @@ void afficherStatistiques(char *pseudo) {
     printf("\n\t|----------------------|----------------------|----------------------|----------------------|\n");
 
     if (!found) {
-        printf("\n\t\t--- Aucune partie trouvée pour le joueur : %s ---\n", pseudo);
+        printf("\n\t\t--- Aucune partie trouvee pour le joueur : %s ---\n", pseudo);
     }
     fclose(fich);
 }
@@ -150,8 +149,8 @@ int chercherJoueur(char * pseudo){
 }
 
 void formatTemps(int duree, int * heures, int * minutes, int * secondes){
-    *heures = duree / 3600; // 1 heure = 3600 secondes
-    *minutes = (duree % 3600) / 60; // 1 minute = 60 secondes
+    *heures = duree / 3600; 
+    *minutes = (duree % 3600) / 60; 
     *secondes = duree % 60;
 }
 
@@ -170,7 +169,7 @@ int totalParties(char * pseudo){
     return i;
 }
 
-#include <dirent.h> // Pour lire les fichiers d'un répertoire
+#include <dirent.h> 
 
 int choisirPartie(char *filename, char *pseudo) {
     DIR *dir;
@@ -178,21 +177,21 @@ int choisirPartie(char *filename, char *pseudo) {
     int count = 0;
     char pattern[50];
     
-    snprintf(pattern, sizeof(pattern), "%s_", pseudo); // Prépare le modèle de recherche, ex: "bourhan_"
+    snprintf(pattern, sizeof(pattern), "%s_", pseudo); 
     
     // Ouvre le répertoire courant
     if ((dir = opendir(".")) == NULL) {
-        perror("Erreur : Impossible d'ouvrir le répertoire");
+        perror("Erreur : Impossible d'ouvrir le repertoire");
         return 0;
     }
 
-    printf("\n\t|----------------------|----------------------|\n");
+    printf("\n\t|----------------------|--------------------------------|\n");
     printf("\t| %-20s | %-20s |\n", "Numero", "Nom de Fichier de Partie");
-    printf("\t|----------------------|----------------------|\n");
+    printf("\t|----------------------|--------------------------------|\n");
 
-    // Parcourt les fichiers du répertoire
+    
     while ((entry = readdir(dir)) != NULL) {
-        if (strstr(entry->d_name, pattern) == entry->d_name) { // Vérifie si le fichier commence par "pseudo_"
+        if (strstr(entry->d_name, pattern) == entry->d_name) {
             printf("\t| %-20d | %-20s |\n", count + 1, entry->d_name);
             count++;
         }
@@ -200,22 +199,21 @@ int choisirPartie(char *filename, char *pseudo) {
     closedir(dir);
 
     if (count == 0) {
-        printf("\n\tAucune partie trouvée pour le pseudo '%s'.\n", pseudo);
-        return 0; // Retourne si aucune partie n'est trouvée
+        printf("\n\tAucune partie trouve pour le pseudo '%s'.\n", pseudo);
+        return 0; 
     }
 
     printf("\n\t|----------------------|----------------------|\n");
-    printf("\n\t Entrez le numéro de la partie que vous voulez charger (ou 0 pour annuler) > ");
+    printf("\n\t Entrez le numero de la partie que vous voulez charger (ou 0 pour annuler) > ");
     
     int choice;
     scanf("%d", &choice);
 
     if (choice == 0) {
-        return 2; // Annule le chargement de la partie
+        return 2; 
     } else if (choice > 0 && choice <= count) {
-        // Recharge le répertoire pour sélectionner le bon fichier
         if ((dir = opendir(".")) == NULL) {
-            perror("Erreur : Impossible de rouvrir le répertoire");
+            perror("Erreur : Impossible de rouvrir le repertoire");
             return 0;
         }
 
@@ -224,7 +222,7 @@ int choisirPartie(char *filename, char *pseudo) {
             if (strstr(entry->d_name, pattern) == entry->d_name) {
                 count++;
                 if (count == choice) {
-                    snprintf(filename, 260, "%s", entry->d_name); // Copie le nom du fichier choisi dans un buffer de taille suffisante
+                    snprintf(filename, 260, "%s", entry->d_name); 
                     closedir(dir);
                     return 1;
                 }
@@ -240,7 +238,7 @@ int choisirPartie(char *filename, char *pseudo) {
 
 int verifierIdPartie(int * tab, int taille, char * saisie){
     size_t i;
-    if(strlen(saisie) == 1 && saisie[0] == '0') return 1;  // condition for exit
+    if(strlen(saisie) == 1 && saisie[0] == '0') return 1; 
     for(i = 0; i < strlen(saisie); i++){
         if(saisie[i] > '9' || saisie[i] < '0') return 0;
     }

@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #ifdef _WIN32
-    #include <direct.h> // For Windows
-    #define MAKE_DIR(dir) _mkdir(dir) // Use _mkdir directly
+    #include <direct.h> 
+    #define MAKE_DIR(dir) _mkdir(dir) 
 #else
-    #include <sys/stat.h> // For Unix-like systems
-    #define MAKE_DIR(dir) mkdir(dir, 0777) // Use mkdir with permissions
+    #include <sys/stat.h> 
+    #define MAKE_DIR(dir) mkdir(dir, 0777) 
 #endif
 
 int chercherGrille(char *filename, int *type) {
@@ -30,7 +30,6 @@ int chercherGrille(char *filename, int *type) {
         num = numeroGrille(*type);
     }
     
-    // Only add `sudoku_grids/` once here.
     switch(c) {
         case '1': sprintf(filename, "sudoku_grids/Grille F %d", num); break;
         case '2': sprintf(filename, "sudoku_grids/Grille I %d", num); break;
@@ -124,9 +123,9 @@ Grid* modifierGrille(Grid* grille) {
 
     while (1) {
         system("cls");
-        afficherGrille(grille);  // Display the current state of the grid
+        afficherGrille(grille);  
 
-        // Select row
+        
         do {
             printf("\t\t - Enter row number (1-9) or 'S' to stop: ");
             lin = getchar();
@@ -148,7 +147,7 @@ Grid* modifierGrille(Grid* grille) {
 
         colonne = col - '0';
 
-        // Set value in the cell
+        
         do {
             printf("\t\t - Enter value (0-9) for cell or '0' to clear: ");
             val = getchar();
@@ -157,16 +156,15 @@ Grid* modifierGrille(Grid* grille) {
 
         valeur = val - '0';
 
-        // Check for conflicts in row, column, or region
         int previousValue = grille->cell[ligne - 1][colonne - 1].valeur;
         grille->cell[ligne - 1][colonne - 1].valeur = valeur;
         
         if (valeur != 0 && (!verifierLigne(grille, ligne - 1) || !verifierColonne(grille, colonne - 1) || !verifierRegion(grille, ligne - 1, colonne - 1))) {
             printf("\n\t\t - ERROR: Value %d conflicts with existing values. Re-enter.\n", valeur);
-            grille->cell[ligne - 1][colonne - 1].valeur = previousValue;  // Revert if invalid
+            grille->cell[ligne - 1][colonne - 1].valeur = previousValue;  
             getchar();
         } else {
-            grille->cell[ligne - 1][colonne - 1].estEditable = (valeur == 0) ? 1 : 0;  // Mark as non-editable if non-zero
+            grille->cell[ligne - 1][colonne - 1].estEditable = (valeur == 0) ? 1 : 0;  
         }
     }
 
@@ -175,7 +173,7 @@ Grid* modifierGrille(Grid* grille) {
 
 
 void goodbyeMessage() {
-    system("cls");  // Clear the screen for a clean goodbye display
+    system("cls");  
 
     printf("\n\n\n");
     printf("\t\t\t  ||   *********  ********  ********  *******        ********    ***   ***   ********  || \n");
@@ -188,9 +186,8 @@ void goodbyeMessage() {
     printf("\t\t\t  ||   *********  ********  ********  *******        ********       ******   ********  || \n\n");
     printf("\n\n\n");
 
-    // Optionally, pause so that users can see the message before the program ends or exits.
     printf("\t\t\t Press any key to exit...\n");
-    getchar(); // Wait for user input to close
+    getchar(); 
 }
 
 
@@ -271,7 +268,7 @@ void choixMenuAdmin(char choix) {
 
                 if (c == '1') {
                     grille = creerGrille();
-                    grille = modifierGrille(grille);  // Ensure modifierGrille returns the modified grid
+                    grille = modifierGrille(grille);  
                     if (grille != NULL) {
                         enregistrerGrille(filename, grille);
                         nombreGrilles(type);
@@ -318,7 +315,7 @@ void choixMenuAdmin(char choix) {
 
 
 void menuAdmin() {
-    _mkdir("sudoku_grids"); // Ensure the folder exists
+    _mkdir("sudoku_grids"); 
     char c;
     do {
         clearBuffer();

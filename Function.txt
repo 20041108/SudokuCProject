@@ -1,0 +1,45 @@
+afficherGrille(Grid * grille): This function takes a Sudoku grid as input and displays it on the console.
+
+verifierLigne(Grid * grille, int ligne): This function checks if the values in a specific row of the Sudoku grid are unique. It returns 1 if the row is valid, and 0 otherwise.
+
+verifierColonne(Grid * grille, int colonne): This function checks if the values in a specific column of the Sudoku grid are unique. It returns 1 if the column is valid, and 0 otherwise.
+
+verifierRegion(Grid * grille, int ligne, int colonne): This function checks if the values in a specific region (3x3 sub-grid) of the Sudoku grid are unique. It returns 1 if the region is valid, and 0 otherwise.
+
+verifierGrille(Grid* grille): This function checks if the Sudoku grid is valid. It calls the verifierLigne, verifierColonne, and verifierRegion functions to check the validity of each row, column, and region. It returns 1 if the grid is valid, and 0 otherwise.
+
+enregistrerGrille(char * filename, Grid * grille): This function saves the Sudoku grid to a file. It takes the filename and the grid as input.
+
+chargerGrille(char * filename): This function loads a Sudoku grid from a file. It takes the filename as input and returns the loaded grid.
+
+progressionJeu(Grid * grid): This function calculates the progress of the Sudoku game. It returns the percentage of filled cells in the grid.
+
+choisirGrille(char * filename, char * niveau): This function selects a Sudoku grid based on the filename and the difficulty level.
+
+choisirCellule(Grid * grille, int * lin, int * col): This function prompts the user to select a cell in the Sudoku grid.
+
+remplirCellule(Grid * grille): This function prompts the user to enter a value for a specific cell in the Sudoku grid.
+
+remplirGrille(Grid * grille, int * progression, int * temps, Partie * partie): This function fills the Sudoku grid with values. It takes the grid, progress, time, and the game state as input.
+
+reglesSudoku(): This function displays the rules of the Sudoku game on the console.
+
+proposerAide(Grid * grille , int ligne, int colonne): This function prompts the user to choose an option for getting help in solving the Sudoku.
+
+choix(char choix, char * pseudo): This function takes a choice and a username as input and performs different actions based on the choice.
+
+menuSudoku(): This function displays the main menu of the Sudoku game.
+
+initialisation(char * pseudo): This function initializes the Sudoku game by prompting the user to enter their name.
+
+totalGrille(int niveau): This function returns the total number of cells in a Sudoku grid based on the difficulty level.
+
+verifierCellule(Grid * grille, int num, int lin, int col): This function checks if a specific number is present in the same row, column, or region of the Sudoku grid. It returns 1 if the number is not present, and 0 otherwise.
+
+resoudreSudoku(Grid * grille): This function solves the Sudoku puzzle recursively. It starts by finding an empty cell in the grid and tries different numbers until it finds a valid solution.
+
+viderTampon(): This function clears the input buffer.
+
+clearBuffer(): This function clears the input buffer.
+
+fileExists(const char *filename): This function checks if a file exists.

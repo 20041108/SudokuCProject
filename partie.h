@@ -19,9 +19,8 @@ int chercherStatistique(char * pseudo);
 int chercherJoueur(char * pseudo);
 void formatTemps(int duree, int * heures, int * minutes, int * secondes);
 
-//new version
     int totalParties(char * pseudo);
     int choisirPartie(char * filename, char * pseudo);
     int verifierIdPartie(int * tab, int taille, char * saisie);
 
-#endif // PARTIE_H_INCLUDED
+#endif 
