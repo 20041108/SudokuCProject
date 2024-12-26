@@ -22,7 +22,7 @@
     int verifierColonne(Grid * grille, int ligne);
     int verifierRegion(Grid * grille, int ligne, int colonne);
     int verifierGrille(Grid* grille);
-    int enregistrerGrille(char * filename, Grid * grille);
+int enregistrerGrille(const char * filename, Grid * grille);
     Grid * chargerGrille(char * filename);
     int progressionJeu(Grid * grid);
     int choisirGrille(char * filename, char * niveau);
@@ -46,6 +46,9 @@
     void clearBuffer();
 
     int fileExists(const char *filename);
+    void sauvegarderPartie(Grid *grille, Partie *partie, const char *filename);
+    Grid * remplirGrille2(Grid * grille, int * progression, int * duree, char * filename);
+
 
 
 #endif 
