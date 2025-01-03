@@ -113,15 +113,15 @@ int enregistrerGrille(const char* filename, Grid* grille) {
     }
 
     // Debugging print
-    printf("Debug: Saving grid to file %s\n", filename);
+    //printf("Debug: Saving grid to file %s\n", filename);
 
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             fprintf(fich, "%d %d ", grille->cell[i][j].valeur, grille->cell[i][j].estEditable);
 
             // Debugging print
-            printf("Debug: Writing cell [%d][%d]: value = %d, editable = %d\n",
-                i, j, grille->cell[i][j].valeur, grille->cell[i][j].estEditable);
+            //printf("Debug: Writing cell [%d][%d]: value = %d, editable = %d\n",
+             //   i, j, grille->cell[i][j].valeur, grille->cell[i][j].estEditable);
         }
         fprintf(fich, "\n");
     }
