@@ -260,7 +260,6 @@ void choixMenuAdmin(char choix) {
                 do {
                     system("cls");
                     printf("\n\n\n\t\t\t\t - cliquez sur .1. pour creer une nouvelle grille pour votre jeu\n\n");
-                    printf("\t\t\t\t - cliquez sur .2. pour importer un fichier qui contient votre grille \n\n");
                     printf("\t\t\t\t ----------------------------------------------------------------- \n\n\t\t\t\t >");
                     clearBuffer();
                     c = getchar();
@@ -302,12 +301,16 @@ void choixMenuAdmin(char choix) {
             printf("\t\t\t Sauvegarder cette grille de test sur votre Bureau ?: (y ou n) ? ");
             c = getchar();
             if (c == 'y') {
-                enregistrerGrille("C:\\Users\\Admin\\Desktop\\GrilleTEST", grille);
+                enregistrerGrille("C:\\Etude\\Eilco\\S5\\Algo C\\projet jeu\\annepr\\BourhanVersion\\TestSudoku", grille);
             }
             break;
 
         case '3':
             goodbyeMessage();
+            break;
+
+        case '4':
+            consulterToutesStatistiques();
             break;
     }
     system("cls");
@@ -322,6 +325,7 @@ void menuAdmin() {
         printf("\n\n\n\t\t\t ---------------------------- MENU ADMIN SUDOKU ----------------------------\n\n");
         printf("\t\t\t\t - cliquez sur .1. pour creer une grille \n\n");
         printf("\t\t\t\t - cliquez sur .2. pour generer une grille de test (pre-remplie) \n\n");
+        printf("\t\t\t\t - cliquez sur .4. pour consulter les statistiques \n\n");
         printf("\t\t\t\t - cliquez sur .3. pour quitter \n\n");
         printf("\t\t\t ----------------------------------------------------------------------------\n");
         printf("\t\t\t\t Faites votre choix : ");
@@ -331,3 +335,41 @@ void menuAdmin() {
     } while(c != '3');
 }
 
+
+int consulterToutesStatistiques() {
+    Partie partie;
+    int found = 0;
+    FILE *fich = fopen("statistiques", "r");
+    if (!fich) {
+        printf("\n\n\t\t\t Alerte : aucune statistique n'a été établie pour vous !\n");
+        printf("\n\t\t\t Tapez (Entrer) pour retourner au menu > ");
+        clearBuffer();
+        getchar();
+        return 0;
+    }
+
+    printf("\n\t|----------------------|----------------------|----------------------|----------------------|\n");
+    printf("\t| %-20s | %-20s | %-20s | %-20s |\n", "Joueur", "Niveau", "Temps", "Progression");
+    printf("\t|----------------------|----------------------|----------------------|----------------------|\n");
+
+    while (fscanf(fich, "%d %49s %49s %d %d", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression) == 5) {
+        int heures = partie.temps / 3600;
+        int minutes = (partie.temps % 3600) / 60;
+        int secondes = partie.temps % 60;
+        printf("\t| %-20s | %-20s | %2d h %2d min %2d s     | %-20d/81  |\n",
+               partie.joeur, partie.niveau, heures, minutes, secondes, partie.progression);
+        found = 1;
+    }
+
+    fclose(fich);
+
+    if (!found) {
+        printf("\n\t\t\t --- Aucune statistique trouvée pour le joueur ---\n");
+    }
+
+    printf("\n\t\t\t Tapez (Entrer) pour retourner au menu > ");
+    clearBuffer();
+    getchar();
+
+    return found;
+}

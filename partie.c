@@ -28,7 +28,10 @@ int verifierPseudo(char * pseudo){
 
 int ajouterStatistique(Partie *partie, char *filename) {
     FILE *fich = fopen(filename, "a");
-    if (fich == NULL) return 0;
+    if (fich == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return 0;
+    }
     
     fprintf(fich, "%d %s %s %d %d\n", partie->id, partie->joeur, partie->niveau, partie->temps, partie->progression);
     fclose(fich);
@@ -98,38 +101,39 @@ void afficherStatistiques(char *pseudo) {
 }
 
 
-int chercherStatistique(char * pseudo){
+int chercherStatistique(char *pseudo) {
     Partie partie;
-    int boolean = 0, secondes = 0, minutes = 0, heures = 0;
-    FILE * fich = fopen("statistiques", "r");
-    char temps[20], progression[10];
-    afficherSudoku();
-    if(fich == NULL){
-        printf("\n\n\t\t\t Alerte : aucune statistique n'a ete etablie pour vous !\n");
+    int found = 0;
+    FILE *fich = fopen("statistiques", "r");
+    if (!fich) {
+        printf("\n\n\t\t\t Alerte : aucune statistique n'a été établie pour vous !\n");
         return 0;
     }
+
     printf("\n\t|----------------------|----------------------|----------------------|----------------------|\n");
     printf("\t| %-20s | %-20s | %-20s | %-20s |\n", "Joueur", "Niveau", "Temps", "Progression");
     printf("\t|----------------------|----------------------|----------------------|----------------------|\n");
-    while(!feof(fich)){
-       fscanf(fich, "%d %s %s %d %d\n", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression);
-       if(strcmp(partie.joeur, pseudo) == 0){
-           formatTemps((int)partie.temps, &heures, &minutes, &secondes);
-           sprintf(temps, "%d h %d min %d s", heures, minutes, secondes);
-           sprintf(progression, "%d/81", partie.progression);
-           printf("\t| %-20s | %-20s | %-20s | %-20s |\n", partie.joeur, partie.niveau, temps, progression);
-           boolean = 1;
-       }
+
+    while (fscanf(fich, "%d %49s %49s %d %d", &partie.id, partie.joeur, partie.niveau, &partie.temps, &partie.progression) == 5) {
+        if (strcmp(partie.joeur, pseudo) == 0) {
+            int heures = partie.temps / 3600;
+            int minutes = (partie.temps % 3600) / 60;
+            int secondes = partie.temps % 60;
+            printf("\t| %-20s | %-20s | %2d h %2d min %2d s     | %-20d/81  |\n",
+                   partie.joeur, partie.niveau, heures, minutes, secondes, partie.progression);
+            found = 1;
+        }
     }
-    printf("\n\t|----------------------|----------------------|----------------------|\n");
-    if(boolean != 1){
-       system("cls");
-       afficherSudoku();
-       printf("\n\n\t\t\t --------- Aucune statistique n'a ete enregistre pour vous ! --------- \n");
-    }
+
     fclose(fich);
-    return 1;
+
+    if (!found) {
+        printf("\n\t\t\t --- Aucune statistique trouvée pour le joueur : %s ---\n", pseudo);
+    }
+
+    return found;
 }
+
 
 int chercherJoueur(char * pseudo){
     Partie part;

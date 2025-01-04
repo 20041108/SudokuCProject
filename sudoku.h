@@ -49,6 +49,9 @@ int enregistrerGrille(const char * filename, Grid * grille);
     void sauvegarderPartie(Grid *grille, Partie *partie, const char *filename);
     Grid * remplirGrille2(Grid * grille, int * progression, int * duree, char * filename);
 
+    int ajouterStatistiques(Partie *partie, char *filename);
+
+
 
 
 #endif 

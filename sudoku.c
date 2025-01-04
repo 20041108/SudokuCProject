@@ -262,7 +262,7 @@ int choisirGrille(char *filename, char *niveau) {
     // Display menu and select difficulty
     do {
         system("cls");
-        printf("\n\n\t\t\t -------------------------------- JEU SUDOKU --------------------------------\n\n");
+        printf(RED"\n\n\t\t\t -------------------------------- JEU SUDOKU --------------------------------\n\n"RESET);
         printf("\t\t\t\t - cliquez sur '1' pour un niveau Facile \n\n");
         printf("\t\t\t\t - cliquez sur '2' pour un niveau Intermediaire \n\n");
         printf("\t\t\t\t - cliquez sur '3' pour un niveau Difficile \n\n");
@@ -476,7 +476,17 @@ Grid * remplirGrille(Grid * grille, int * progression, int * duree, Partie *part
             enregistrerGrille(filename, grille); 
             *progression = progressionJeu(grille);
             *duree = (int)temps;
-            return NULL; 
+
+
+            partie->progression = *progression;
+            partie->temps = *duree;
+            if (ajouterStatistiques(partie, "statistiques")) {
+                printf(GREEN "Statistiques enregistrées avec succès.\n" RESET);
+            } else {
+                printf(RED "Erreur : Échec de l'enregistrement des statistiques.\n" RESET);
+            }
+            return NULL;  
+            
         } else if (c == 'A' || c == 'a') {
             int ligne, colonne;
             choisirCellule(grille, &ligne, &colonne);
@@ -609,9 +619,9 @@ void choix(char choix, char *pseudo) {
                 // Increase buffer size and truncate inputs
                 char filename[150];
                 snprintf(filename, sizeof(filename), "%.20s_%.20s_%d.txt", partie.joeur, partie.niveau, partie.id);
-
+                ajouterStatistiques(&partie, "statistiques");
                 enregistrerGrille(filename, grille);
-                ajouterStatistique(&partie, "statistiques");
+                
                 printf(GREEN "Partie enregistrée sous le nom : %s\n" RESET, filename);
             } else {
                 printf("Game progress saved for next time.\n");
@@ -664,9 +674,8 @@ void choix(char choix, char *pseudo) {
         case '4':
             do {
                 system("cls");
-                printf("\n\n\n\t\t\t ---------------------------- LES STATISTIQUES ----------------------------\n\n");
+                printf(RED"\n\n\n\t\t\t ---------------------------- LES STATISTIQUES ----------------------------\n\n"RESET);
                 printf("\t\t\t\t - Cliquez sur '1' pour afficher vos statistiques. \n\n");
-                printf("\t\t\t\t - Cliquez sur '2' pour afficher toutes les statistiques. \n\n");
                 printf("\t\t\t\t - Cliquez sur '3' pour retourner au menu \n\n");
                 printf("\t\t\t ----------------------------------------------------------------------------\n");
                 printf("\t\t\t\t Faites votre choix > ");
@@ -701,15 +710,15 @@ void menuSudoku() {
     char c;
     do {
         fflush(stdin);
-        printf("\n\n\t\t\t --------------------------------------------------------------------------------------------\n");
-        printf("\t\t\t Le nom de votre Joueur : %s", pseudo);
-        printf("\n\t\t\t ------------------------------------ MENU DU JEU SUDOKU ------------------------------------\n\n");
+        printf(YELLOW"\n\n\t\t\t --------------------------------------------------------------------------------------------\n"RESET);
+        printf(BLUE"\t\t\t Le nom de votre Joueur : %s" RESET, pseudo );
+        printf(YELLOW"\n\t\t\t ------------------------------------ MENU DU JEU SUDOKU ------------------------------------\n\n"RESET);
         printf("\t\t\t\t - Appuyez sur .1. Commencer une nouvelle partie. \n\n");
         printf("\t\t\t\t - Appuyez sur .2. Continuer votre derniere partie. \n\n");
         printf("\t\t\t\t - Appuyez sur .3. Voirs les regles du SUDOKU.\n\n");
         printf("\t\t\t\t - Appuyez sur .4. Consulter votres statistiques.\n\n");
         printf("\t\t\t\t - Appuyez sur .5. Quitter. \n");
-        printf("\n\t\t\t ---------------------------------------------------------------------------------------------\n");
+        printf(YELLOW"\n\t\t\t ---------------------------------------------------------------------------------------------\n"RESET);
         printf("\t\t\t Faites votre choix > ");
         scanf("%c", &c);
         system("cls");
@@ -781,4 +790,25 @@ Grid * remplirGrille2(Grid * grille, int * progression, int * duree, char *filen
     *progression = progressionJeu(grille);
     *duree = (int)temps;
     return grille;
+}
+
+int ajouterStatistiques(Partie *partie, char *filename) {
+    FILE *fich = fopen(filename, "a");
+    if (fich == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return 0;
+    }
+
+    // Affichez les données qui seront écrites
+    printf("Debug: Écriture des statistiques - ID: %d, Joueur: %s, Niveau: %s, Temps: %d, Progression: %d\n",
+           partie->id, partie->joeur, partie->niveau, partie->temps, partie->progression);
+
+    if (fprintf(fich, "%d %s %s %d %d\n", partie->id, partie->joeur, partie->niveau, partie->temps, partie->progression) < 0) {
+        perror("Erreur lors de l'écriture dans le fichier");
+        fclose(fich);
+        return 0;
+    }
+
+    fclose(fich);
+    return 1;
 }

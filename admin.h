@@ -16,4 +16,5 @@ void goodbyeMessage();
 
 void menuAdmin();
 void clearBuffer();
+int consulterToutesStatistiques();
 #endif 
